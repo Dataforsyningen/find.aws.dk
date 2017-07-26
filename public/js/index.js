@@ -3,7 +3,9 @@
 var kort= require('dawa-kort')
   , dawalautocomplete= require('./dawa-leaflet-autocomplete.js')
   , dawalgrafik= require('./dawa-leaflet-grafik.js')
-  , dawautil= require('dawa-util');
+  , dawautil= require('dawa-util')
+  , URLSearchParams = require('url-search-params')  
+  , dawaois= require('./dawa-ois-koder.js');
 
 var map;
 
@@ -21,11 +23,7 @@ var options= {
   },
   {
     text: 'Bygning?',
-    callback: nærmeste('bygninger')
-  },
-  {
-    text: 'Tekniske anlæg?',
-    callback: nærmeste('tekniskeanlaeg')
+    callback: nærmesteBygning
   }
   // {
   //   text: 'Bebyggelse?',
@@ -41,9 +39,19 @@ var options= {
   ]
 }
 
+function main() { 
+  fetch('/getticket').then(function (response) {
+    response.text().then(function (ticket) {      
+      map= kort.viskort('map', ticket, options);
+      dawalautocomplete.search().addTo(map);
+    })
+  });  
+}
+
+main();
 
 function nærmesteAdgangsadresse(e) {
-  fetch(dawautil.danUrl("https://dawa.aws.dk/adgangsadresser/reverse",{format: 'geojson', x: e.latlng.lng, y: e.latlng.lat, medtagugyldige: true}))
+  fetch(dawautil.danUrl("https://dawa.aws.dk/adgangsadresser/reverse",{struktur: 'mini', x: e.latlng.lng, y: e.latlng.lat, medtagugyldige: true}))
   .catch(function (error) {
     alert(error.message);
   })
@@ -58,44 +66,44 @@ function nærmesteAdgangsadresse(e) {
     }
   }) 
   .then( function ( adgangsadresse ) { 
-    var geojsonlayer= L.geoJson(adgangsadresse, {style: dawalautocomplete.style, onEachFeature: dawalautocomplete.eachFeature, pointToLayer: dawalautocomplete.pointToLayer(dawalautocomplete.style)});
-    geojsonlayer.addTo(map);
+    var marker= L.circleMarker(L.latLng(adgangsadresse.y, adgangsadresse.x), {color: 'red', fillColor: 'red', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
+    var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/adgangsadresser?id="+adgangsadresse.id+"'>" + dawautil.formatAdgangsadresse(adgangsadresse) + "</a>"),{autoPan: true});
+    
+    map.setView(L.latLng(adgangsadresse.y, adgangsadresse.x),12);
+    popup.openPopup();
   })
 };
 
 
-function nærmeste(ressource) {
-  return function (e) {
-    fetch(dawautil.danUrl("https://dawa.aws.dk/ois/"+ressource,{format: 'geojson', x: e.latlng.lng, y: e.latlng.lat, medtagugyldige: true}))
-    .catch(function (error) {
-      alert(error.message);
-    })
-    .then(function(response) {
-      if (response.status >=400 && response.status <= 499) {
-        response.json().then(function (object) {
-          alert(object.type + ': ' + object.title);
-        });
-      }
-      else if (response.status >= 200 && response.status <=299 ){
-        return response.json();
-      }
-    }) 
-    .then( function ( bygning ) { 
-      var style=  dawalgrafik.getDefaultStyle(bygning);
-      var geojsonlayer= L.geoJson(bygning, {style: style, onEachFeature: dawalgrafik.eachFeature, pointToLayer: dawalgrafik.pointToLayer(style)});
-      geojsonlayer.addTo(map);
-    //  map.fitBounds(geojsonlayer.getBounds());
-    })
-  };
+function nærmesteBygning(e) {
+  var params = new URLSearchParams();
+  params.set('format','json');
+  params.set('x', e.latlng.lng);
+  params.set('y', e.latlng.lat);
+  params.set('medtagugyldige', true);
+  var url= '/oisbygninger?'+params.toString();
+  fetch(url)
+  .catch(function (error) {
+    alert(error.message);
+  })
+  .then(function(response) {
+    if (response.status >=400 && response.status <= 499) {
+      response.text().then(function (text) {
+        alert(text);
+      });
+    }
+    else if (response.status >= 200 && response.status <=299 ){
+      return response.json();
+    }
+  }) 
+  .then( function ( bygninger ) {
+    var bygning= bygninger[0];
+    var punkt=  L.latLng(bygning.bygningspunkt.koordinater[1], bygning.bygningspunkt.koordinater[0]);
+    var marker= L.circleMarker(punkt, {color: 'blue', fillColor: 'blue', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
+    var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='" + url + "'>" + dawaois.anvendelseskoder[bygning.BYG_ANVEND_KODE] + " fra " + bygning.OPFOERELSE_AAR + "</a>"),{autoPan: true});
+    
+    map.setView(punkt,12);
+    popup.openPopup();
+  //  map.fitBounds(geojsonlayer.getBounds());
+  })
 }
-
-function main() { 
-  fetch('/getticket').then(function (response) {
-    response.text().then(function (ticket) {      
-      map= kort.viskort('map', ticket, options);
-      dawalautocomplete.search().addTo(map);
-    })
-  });  
-}
-
-main();

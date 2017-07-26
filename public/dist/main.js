@@ -60,11 +60,38 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+/* 1 */
 /***/ (function(module, exports) {
 
 exports.corssupported= function () {
@@ -92,16 +119,95 @@ exports.danUrl= function (path, query) {
 }
 
 /***/ }),
-/* 1 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var kort= __webpack_require__(2)
-  , dawalautocomplete= __webpack_require__(3)
-  , dawalgrafik= __webpack_require__(6)
-  , dawautil= __webpack_require__(0);
+var anvendelseskoder= {};
+function initanvendelseskoder() {
+anvendelseskoder[110]= "Stuehus til landbrugsejendom";
+anvendelseskoder[120]= "Fritliggende eenfamilieshus (parcelhus)";
+anvendelseskoder[130]= "Række-, kæde-, eller dobbelthus (lodret adskillelse mellem enhederne)";
+anvendelseskoder[140]= "Etageboligbebyggelse (flerfamiliehus, herunder to-familiehus (vandret adskillelse mellem enhederne)";
+anvendelseskoder[150]= "Kollegium";
+anvendelseskoder[160]= "Døgninstitution (plejehjem, alderdomshjem, børne- eller ungdomshjem)";
+anvendelseskoder[190]= "Anden bygning til helårsbeboelse";
+anvendelseskoder[210]= "Bygning til erhvervsmæssig produktion vedrørende landbrug, gartneri, råstofudvinding o. lign";
+anvendelseskoder[220]= "Bygning til erhvervsmæssig produktion vedrørende industri, håndværk m.v. (fabrik, værksted o. lign.)";
+anvendelseskoder[230]= "El-, gas-, vand- eller varmeværk, forbrændingsanstalt m.v.";
+anvendelseskoder[290]= "Anden bygning til landbrug, industri etc.";
+anvendelseskoder[310]= "Transport- og garageanlæg (fragtmandshal, lufthavnsbygning, banegårdsbygning, parkeringshus). Garage med plads til et eller to køretøjer registreres med anvendelseskode 910";
+anvendelseskoder[320]= "Bygning til kontor, handel, lager, herunder offentlig administration";
+anvendelseskoder[330]= "Bygning til hotel, restaurant, vaskeri, frisør og anden servicevirksomhed";
+anvendelseskoder[390]= "Anden bygning til transport, handel etc.";
+anvendelseskoder[410]= "Bygning til biograf, teater, erhvervsmæssig udstilling, bibliotek, museum, kirke o. lign.";
+anvendelseskoder[420]= "Bygning til undervisning og forskning (skole, gymnasium, forskningslaboratorium o. lign.)";
+anvendelseskoder[430]= "Bygning til hospital, sygehjem, fødeklinik o. lign.";
+anvendelseskoder[440]= "Bygning til daginstitution";
+anvendelseskoder[490]= "Bygning til anden institution, herunder kaserne, fængsel o. lign.";
+anvendelseskoder[510]= "Sommerhus";
+anvendelseskoder[520]= "Bygning til ferieformål m.v., bortset fra sommerhus (feriekoloni, vandrehjem o. lign.)";
+anvendelseskoder[530]= "Bygning i forbindelse med idrætsudøvelse (klubhus, idrætshal, svømmehal o. lign.)";
+anvendelseskoder[540]= "Kolonihavehus";
+anvendelseskoder[590]= "Anden bygning til fritidsformål";
+anvendelseskoder[910]= "Garage med plads til et eller to køretøjer";
+anvendelseskoder[920]= "Carport";
+anvendelseskoder[930]= "Udhus";
+}
+initanvendelseskoder();
+exports.anvendelseskoder= anvendelseskoder;
+
+
+var klassifikationskoder= {};
+function initklassifikationskoder() {
+klassifikationskoder[1110]= "Tank (Produkt på væskeform)";
+klassifikationskoder[1120]= "Silo (Produkt på fast form)";
+klassifikationskoder[1130]= "Gasbeholder (Produkt på gasform)";
+klassifikationskoder[1140]= "Affaldsbeholder";
+klassifikationskoder[1210]= "Vindmølle (elproducerende)";
+klassifikationskoder[1220]= "Slanger til jordvarme";
+klassifikationskoder[1230]= "Solvarme-/ solcelleanlæg";
+klassifikationskoder[1240]= "Nødstrømsforsyningsanlæg";
+klassifikationskoder[1250]= "Transformerstation";
+klassifikationskoder[1260]= "Elskab";
+klassifikationskoder[1265]= "Naturgasfyr";
+klassifikationskoder[1270]= "Andet energiproducerende eller - distribuerende anlæg";
+klassifikationskoder[1310]= "Vandtårn";
+klassifikationskoder[1320]= "Pumpestation";
+klassifikationskoder[1330]= "Swimmingpool";
+klassifikationskoder[1340]= "Private rensningsanlæg f.eks. pileanlæg, nedsivningsanlæg";
+klassifikationskoder[1350]= "Offentlige rensningsanlæg";
+klassifikationskoder[1360]= "Regnvandsanlæg";
+klassifikationskoder[1905]= "Legeplads";
+klassifikationskoder[1910]= "Teknikhus";
+klassifikationskoder[1915]= "Døgnpostboks";
+klassifikationskoder[1920]= "Køleanlæg (herunder aircondition)";
+klassifikationskoder[1925]= "Kunstværk (springvand, mindesmærker m.v.)";
+klassifikationskoder[1930]= "Sirene / mast med sirene";
+klassifikationskoder[1935]= "Skilt";
+klassifikationskoder[1940]= "Antenne / mast fx tv, radio- og telekommunikation";
+klassifikationskoder[1945]= "Dambrug";
+klassifikationskoder[1950]= "Møddingsanlæg";
+klassifikationskoder[1955]= "Andet teknisk anlæg";
+}
+initklassifikationskoder();
+exports.klassifikationskoder= klassifikationskoder;
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var kort= __webpack_require__(4)
+  , dawalautocomplete= __webpack_require__(5)
+  , dawalgrafik= __webpack_require__(7)
+  , dawautil= __webpack_require__(1)
+  , URLSearchParams = __webpack_require__(8)  
+  , dawaois= __webpack_require__(2);
 
 var map;
 
@@ -119,11 +225,7 @@ var options= {
   },
   {
     text: 'Bygning?',
-    callback: nærmeste('bygninger')
-  },
-  {
-    text: 'Tekniske anlæg?',
-    callback: nærmeste('tekniskeanlaeg')
+    callback: nærmesteBygning
   }
   // {
   //   text: 'Bebyggelse?',
@@ -139,9 +241,19 @@ var options= {
   ]
 }
 
+function main() { 
+  fetch('/getticket').then(function (response) {
+    response.text().then(function (ticket) {      
+      map= kort.viskort('map', ticket, options);
+      dawalautocomplete.search().addTo(map);
+    })
+  });  
+}
+
+main();
 
 function nærmesteAdgangsadresse(e) {
-  fetch(dawautil.danUrl("https://dawa.aws.dk/adgangsadresser/reverse",{format: 'geojson', x: e.latlng.lng, y: e.latlng.lat, medtagugyldige: true}))
+  fetch(dawautil.danUrl("https://dawa.aws.dk/adgangsadresser/reverse",{struktur: 'mini', x: e.latlng.lng, y: e.latlng.lat, medtagugyldige: true}))
   .catch(function (error) {
     alert(error.message);
   })
@@ -156,50 +268,51 @@ function nærmesteAdgangsadresse(e) {
     }
   }) 
   .then( function ( adgangsadresse ) { 
-    var geojsonlayer= L.geoJson(adgangsadresse, {style: dawalautocomplete.style, onEachFeature: dawalautocomplete.eachFeature, pointToLayer: dawalautocomplete.pointToLayer(dawalautocomplete.style)});
-    geojsonlayer.addTo(map);
+    var marker= L.circleMarker(L.latLng(adgangsadresse.y, adgangsadresse.x), {color: 'red', fillColor: 'red', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
+    var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/adgangsadresser?id="+adgangsadresse.id+"'>" + dawautil.formatAdgangsadresse(adgangsadresse) + "</a>"),{autoPan: true});
+    
+    map.setView(L.latLng(adgangsadresse.y, adgangsadresse.x),12);
+    popup.openPopup();
   })
 };
 
 
-function nærmeste(ressource) {
-  return function (e) {
-    fetch(dawautil.danUrl("https://dawa.aws.dk/ois/"+ressource,{format: 'geojson', x: e.latlng.lng, y: e.latlng.lat, medtagugyldige: true}))
-    .catch(function (error) {
-      alert(error.message);
-    })
-    .then(function(response) {
-      if (response.status >=400 && response.status <= 499) {
-        response.json().then(function (object) {
-          alert(object.type + ': ' + object.title);
-        });
-      }
-      else if (response.status >= 200 && response.status <=299 ){
-        return response.json();
-      }
-    }) 
-    .then( function ( bygning ) { 
-      var style=  dawalgrafik.getDefaultStyle(bygning);
-      var geojsonlayer= L.geoJson(bygning, {style: style, onEachFeature: dawalgrafik.eachFeature, pointToLayer: dawalgrafik.pointToLayer(style)});
-      geojsonlayer.addTo(map);
-    //  map.fitBounds(geojsonlayer.getBounds());
-    })
-  };
+function nærmesteBygning(e) {
+  var params = new URLSearchParams();
+  params.set('format','json');
+  params.set('x', e.latlng.lng);
+  params.set('y', e.latlng.lat);
+  params.set('medtagugyldige', true);
+  var url= '/oisbygninger?'+params.toString();
+  fetch(url)
+  .catch(function (error) {
+    alert(error.message);
+  })
+  .then(function(response) {
+    if (response.status >=400 && response.status <= 499) {
+      response.text().then(function (text) {
+        alert(text);
+      });
+    }
+    else if (response.status >= 200 && response.status <=299 ){
+      return response.json();
+    }
+  }) 
+  .then( function ( bygninger ) {
+    var bygning= bygninger[0];
+    var punkt=  L.latLng(bygning.bygningspunkt.koordinater[1], bygning.bygningspunkt.koordinater[0]);
+    var marker= L.circleMarker(punkt, {color: 'blue', fillColor: 'blue', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
+    var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='" + url + "'>" + dawaois.anvendelseskoder[bygning.BYG_ANVEND_KODE] + " fra " + bygning.OPFOERELSE_AAR + "</a>"),{autoPan: true});
+    
+    map.setView(punkt,12);
+    popup.openPopup();
+  //  map.fitBounds(geojsonlayer.getBounds());
+  })
 }
 
-function main() { 
-  fetch('/getticket').then(function (response) {
-    response.text().then(function (ticket) {      
-      map= kort.viskort('map', ticket, options);
-      dawalautocomplete.search().addTo(map);
-    })
-  });  
-}
-
-main();
 
 /***/ }),
-/* 2 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -331,52 +444,24 @@ exports.etrs89towgs84= function(x,y) {
 }
 
 /***/ }),
-/* 3 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var dawaAutocomplete2 = __webpack_require__(4)
-  , dawautil = __webpack_require__(0);
-
-var style = {
-  "stroke": false,
-  "color": "red",
-  "opacity": 1.0,
-  "weight": 1, 
-  "fill": true,
-  "fillColor": 'red',
-  "fillOpacity": 1.0,
-  "radius": 5
-};
-
-exports.style= style;
-
-var eachFeature= function (feature, layer) {
-  if ("vejnavn" in feature.properties && "husnr" in feature.properties) {  
-    layer.bindPopup("<a target='_blank' href='https://dawa.aws.dk/adgangsadresser/"+feature.properties.id+"'>"+feature.properties.vejnavn + " " + feature.properties.husnr + ", " + (feature.properties.supplerendebynavn?feature.properties.supplerendebynavn+", ":"") + feature.properties.postnr + " " + feature.properties.postnrnavn + "</a>");
-  }
-  //layer.on('contextmenu', function(e) {map.contextmenu.showAt(e.latlng)});
-}
-
-exports.eachFeature= eachFeature;
-
-function pointToLayer(style) {
-  return function(feature, latlng) {
-    return L.circleMarker(latlng, style);
-  }
-}
-
-exports.pointToLayer= pointToLayer;
+var dawaAutocomplete2 = __webpack_require__(6)
+  , dawautil = __webpack_require__(1);
 
 function selected(map) {
   return function (event) {
-    fetch(dawautil.danUrl(event.data.href, {format: 'geojson'})).then( response => {
-      response.json().then( function ( data ) {
-        var geojsonlayer= L.geoJson(data, {style: style, onEachFeature: eachFeature, pointToLayer: pointToLayer(style)});
-        geojsonlayer.addTo(map);
-        map.fitBounds(geojsonlayer.getBounds());
+    fetch(dawautil.danUrl(event.data.href, {struktur: 'mini'})).then( response => {
+      response.json().then( function ( adgangsadresse ) {
+        var marker= L.circleMarker(L.latLng(adgangsadresse.y, adgangsadresse.x), {color: 'red', fillColor: 'red', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
+        var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/adgangsadresser?id="+adgangsadresse.id+"'>" + dawautil.formatAdgangsadresse(adgangsadresse) + "</a>"),{autoPan: true});
+    
+        map.setView(L.latLng(adgangsadresse.y, adgangsadresse.x),12);
+        popup.openPopup();
       });
     });
   }
@@ -425,7 +510,7 @@ exports.search = function(id, options) {
 }
 
 /***/ }),
-/* 4 */
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2376,39 +2461,16 @@ function dawaAutocomplete(inputElm, options) {
 
 
 
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(5)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(0)))
 
 /***/ }),
-/* 5 */
-/***/ (function(module, exports) {
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
 
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1,eval)("this");
-} catch(e) {
-	// This works if the window reference is available
-	if(typeof window === "object")
-		g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
+"use strict";
 
 
-/***/ }),
-/* 6 */
-/***/ (function(module, exports) {
-
+var dawaois= __webpack_require__(2);
 
 var defaultpointstyle = {
   "stroke": false,
@@ -2474,100 +2536,37 @@ var defaultlinestyle = {
 };
 
 
-var anvendelseskoder= {};
-  function initanvendelseskoder() {
-    anvendelseskoder[110]= "Stuehus til landbrugsejendom";
-    anvendelseskoder[120]= "Fritliggende eenfamilieshus (parcelhus)";
-    anvendelseskoder[130]= "Række-, kæde-, eller dobbelthus (lodret adskillelse mellem enhederne)";
-    anvendelseskoder[140]= "Etageboligbebyggelse (flerfamiliehus, herunder to-familiehus (vandret adskillelse mellem enhederne)";
-    anvendelseskoder[150]= "Kollegium";
-    anvendelseskoder[160]= "Døgninstitution (plejehjem, alderdomshjem, børne- eller ungdomshjem)";
-    anvendelseskoder[190]= "Anden bygning til helårsbeboelse";
-    anvendelseskoder[210]= "Bygning til erhvervsmæssig produktion vedrørende landbrug, gartneri, råstofudvinding o. lign";
-    anvendelseskoder[220]= "Bygning til erhvervsmæssig produktion vedrørende industri, håndværk m.v. (fabrik, værksted o. lign.)";
-    anvendelseskoder[230]= "El-, gas-, vand- eller varmeværk, forbrændingsanstalt m.v.";
-    anvendelseskoder[290]= "Anden bygning til landbrug, industri etc.";
-    anvendelseskoder[310]= "Transport- og garageanlæg (fragtmandshal, lufthavnsbygning, banegårdsbygning, parkeringshus). Garage med plads til et eller to køretøjer registreres med anvendelseskode 910";
-    anvendelseskoder[320]= "Bygning til kontor, handel, lager, herunder offentlig administration";
-    anvendelseskoder[330]= "Bygning til hotel, restaurant, vaskeri, frisør og anden servicevirksomhed";
-    anvendelseskoder[390]= "Anden bygning til transport, handel etc.";
-    anvendelseskoder[410]= "Bygning til biograf, teater, erhvervsmæssig udstilling, bibliotek, museum, kirke o. lign.";
-    anvendelseskoder[420]= "Bygning til undervisning og forskning (skole, gymnasium, forskningslaboratorium o. lign.)";
-    anvendelseskoder[430]= "Bygning til hospital, sygehjem, fødeklinik o. lign.";
-    anvendelseskoder[440]= "Bygning til daginstitution";
-    anvendelseskoder[490]= "Bygning til anden institution, herunder kaserne, fængsel o. lign.";
-    anvendelseskoder[510]= "Sommerhus";
-    anvendelseskoder[520]= "Bygning til ferieformål m.v., bortset fra sommerhus (feriekoloni, vandrehjem o. lign.)";
-    anvendelseskoder[530]= "Bygning i forbindelse med idrætsudøvelse (klubhus, idrætshal, svømmehal o. lign.)";
-    anvendelseskoder[540]= "Kolonihavehus";
-    anvendelseskoder[590]= "Anden bygning til fritidsformål";
-    anvendelseskoder[910]= "Garage med plads til et eller to køretøjer";
-    anvendelseskoder[920]= "Carport";
-    anvendelseskoder[930]= "Udhus";
-  }
-  initanvendelseskoder();
 
-
-  var klassifikationskoder= {};
-  function initklassifikationskoder() {
-    klassifikationskoder[1110]= "Tank (Produkt på væskeform)";
-    klassifikationskoder[1120]= "Silo (Produkt på fast form)";
-    klassifikationskoder[1130]= "Gasbeholder (Produkt på gasform)";
-    klassifikationskoder[1140]= "Affaldsbeholder";
-    klassifikationskoder[1210]= "Vindmølle (elproducerende)";
-    klassifikationskoder[1220]= "Slanger til jordvarme";
-    klassifikationskoder[1230]= "Solvarme-/ solcelleanlæg";
-    klassifikationskoder[1240]= "Nødstrømsforsyningsanlæg";
-    klassifikationskoder[1250]= "Transformerstation";
-    klassifikationskoder[1260]= "Elskab";
-    klassifikationskoder[1265]= "Naturgasfyr";
-    klassifikationskoder[1270]= "Andet energiproducerende eller - distribuerende anlæg";
-    klassifikationskoder[1310]= "Vandtårn";
-    klassifikationskoder[1320]= "Pumpestation";
-    klassifikationskoder[1330]= "Swimmingpool";
-    klassifikationskoder[1340]= "Private rensningsanlæg f.eks. pileanlæg, nedsivningsanlæg";
-    klassifikationskoder[1350]= "Offentlige rensningsanlæg";
-    klassifikationskoder[1360]= "Regnvandsanlæg";
-    klassifikationskoder[1905]= "Legeplads";
-    klassifikationskoder[1910]= "Teknikhus";
-    klassifikationskoder[1915]= "Døgnpostboks";
-    klassifikationskoder[1920]= "Køleanlæg (herunder aircondition)";
-    klassifikationskoder[1925]= "Kunstværk (springvand, mindesmærker m.v.)";
-    klassifikationskoder[1930]= "Sirene / mast med sirene";
-    klassifikationskoder[1935]= "Skilt";
-    klassifikationskoder[1940]= "Antenne / mast fx tv, radio- og telekommunikation";
-    klassifikationskoder[1945]= "Dambrug";
-    klassifikationskoder[1950]= "Møddingsanlæg";
-    klassifikationskoder[1955]= "Andet teknisk anlæg";
-  }
-  initklassifikationskoder();
-
-exports.eachFeature= function (feature, layer) {
-    if ("ejerlavkode" in feature.properties && "matrikelnr" in feature.properties && !("vejnavn" in feature.properties)) {      
-      layer.bindPopup("Jordstykke: " + feature.properties.ejerlavkode + " " + feature.properties.matrikelnr);
+exports.eachFeature= 
+  function (showpopup) {
+    return function (feature, layer) {
+      var popup;
+      if ("ejerlavkode" in feature.properties && "matrikelnr" in feature.properties && !("vejnavn" in feature.properties)) {      
+        popup= layer.bindPopup("Jordstykke: " + feature.properties.ejerlavkode + " " + feature.properties.matrikelnr);
+      }
+      else if ("type" in feature.properties && "navn" in feature.properties) {  
+        popup= layer.bindPopup(feature.properties.navn + " (" + feature.properties.type + ")");
+      }
+      else if ("kode" in feature.properties && "navn" in feature.properties) {  
+        popup= layer.bindPopup(feature.properties.kode + " " + feature.properties.navn);
+      }
+       else if ("nr" in feature.properties && "navn" in feature.properties) {  
+        popup= layer.bindPopup(feature.properties.nr + " " + feature.properties.navn);
+      }
+      else if ("vejnavn" in feature.properties && "husnr" in feature.properties && "etage" in feature.properties) {  
+        popup= layer.bindPopup("<a target='_blank' href='https://dawa.aws.dk/adresser/"+feature.properties.id+"'>"+feature.properties.vejnavn + " " + feature.properties.husnr + ", " + (feature.properties.supplerendebynavn?feature.properties.supplerendebynavn+", ":"") + feature.properties.postnr + " " + feature.properties.postnrnavn + "</a>");
+      }
+      else if ("vejnavn" in feature.properties && "husnr" in feature.properties) {  
+        popup= layer.bindPopup("<a target='_blank' href='https://dawa.aws.dk/adgangsadresser/"+feature.properties.id+"'>"+feature.properties.vejnavn + " " + feature.properties.husnr + ", " + (feature.properties.supplerendebynavn?feature.properties.supplerendebynavn+", ":"") + feature.properties.postnr + " " + feature.properties.postnrnavn + "</a>");
+      }
+      else if ("Tekniskanlaeg_id" in feature.properties) {  
+        popup= layer.bindPopup("<a target='_blank' href='https://dawa.aws.dk/ois/tekniskeanlaeg?id="+feature.properties.Tekniskanlaeg_id+"'>"+dawaois.klassifikationskoder[feature.properties.Klassifikation] + " etableret " + feature.properties.Etableringsaar + "</a>");
+      }
+      else if ("Bygning_id" in feature.properties) {  
+        popup= layer.bindPopup("<a target='_blank' href='https://dawa.aws.dk/ois/bygninger?id="+feature.properties.Bygning_id+"'>"+dawaois.anvendelseskoder[feature.properties.BYG_ANVEND_KODE] + " fra " + feature.properties.OPFOERELSE_AAR + "</a>");
+      }
+      if (showpopup) popup.openPopup();
     }
-    else if ("type" in feature.properties && "navn" in feature.properties) {  
-      layer.bindPopup(feature.properties.navn + " (" + feature.properties.type + ")");
-    }
-    else if ("kode" in feature.properties && "navn" in feature.properties) {  
-      layer.bindPopup(feature.properties.kode + " " + feature.properties.navn);
-    }
-     else if ("nr" in feature.properties && "navn" in feature.properties) {  
-      layer.bindPopup(feature.properties.nr + " " + feature.properties.navn);
-    }
-    else if ("vejnavn" in feature.properties && "husnr" in feature.properties && "etage" in feature.properties) {  
-      layer.bindPopup("<a target='_blank' href='https://dawa.aws.dk/adresser/"+feature.properties.id+"'>"+feature.properties.vejnavn + " " + feature.properties.husnr + ", " + (feature.properties.supplerendebynavn?feature.properties.supplerendebynavn+", ":"") + feature.properties.postnr + " " + feature.properties.postnrnavn + "</a>");
-    }
-    else if ("vejnavn" in feature.properties && "husnr" in feature.properties) {  
-      layer.bindPopup("<a target='_blank' href='https://dawa.aws.dk/adgangsadresser/"+feature.properties.id+"'>"+feature.properties.vejnavn + " " + feature.properties.husnr + ", " + (feature.properties.supplerendebynavn?feature.properties.supplerendebynavn+", ":"") + feature.properties.postnr + " " + feature.properties.postnrnavn + "</a>");
-    }
-    else if ("Tekniskanlaeg_id" in feature.properties) {  
-      layer.bindPopup("<a target='_blank' href='https://dawa.aws.dk/ois/tekniskeanlaeg?id="+feature.properties.Tekniskanlaeg_id+"'>"+klassifikationskoder[feature.properties.Klassifikation] + " etableret " + feature.properties.Etableringsaar + "</a>");
-    }
-    else if ("Bygning_id" in feature.properties) {  
-      layer.bindPopup("<a target='_blank' href='https://dawa.aws.dk/ois/bygninger?id="+feature.properties.Bygning_id+"'>"+anvendelseskoder[feature.properties.BYG_ANVEND_KODE] + " fra " + feature.properties.OPFOERELSE_AAR + "</a>");
-    }
-    layer.on('contextmenu', function(e) {map.contextmenu.showAt(e.latlng)});
   }
 
 exports.pointToLayer= function (style) {
@@ -2606,6 +2605,257 @@ exports.getDefaultStyle= function (data) {
   return defaultstyle;
 }
 
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {/*!
+Copyright (C) 2015 by WebReflection
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+*/
+
+
+function URLSearchParams(query) {
+  var
+    index, key, value,
+    pairs, i, length,
+    dict = Object.create(null)
+  ;
+  this[secret] = dict;
+  if (!query) return;
+  if (typeof query === 'string') {
+    if (query.charAt(0) === '?') {
+      query = query.slice(1);
+    }
+    for (
+      pairs = query.split('&'),
+      i = 0,
+      length = pairs.length; i < length; i++
+    ) {
+      value = pairs[i];
+      index = value.indexOf('=');
+      if (-1 < index) {
+        appendTo(
+          dict,
+          decode(value.slice(0, index)),
+          decode(value.slice(index + 1))
+        );
+      } else if (value.length){
+        appendTo(
+          dict,
+          decode(value),
+          ''
+        );
+      }
+    }
+  } else {
+    if (isArray(query)) {
+      for (
+        i = 0,
+        length = query.length; i < length; i++
+      ) {
+        value = query[i];
+        appendTo(dict, value[0], value[1]);
+      }
+    } else {
+      for (key in query) {
+         appendTo(dict, key, query[key]);
+      }
+    }
+  }
+}
+
+var
+  isArray = Array.isArray,
+  URLSearchParamsProto = URLSearchParams.prototype,
+  find = /[!'\(\)~]|%20|%00/g,
+  plus = /\+/g,
+  replace = {
+    '!': '%21',
+    "'": '%27',
+    '(': '%28',
+    ')': '%29',
+    '~': '%7E',
+    '%20': '+',
+    '%00': '\x00'
+  },
+  replacer = function (match) {
+    return replace[match];
+  },
+  iterable = isIterable(),
+  secret = '__URLSearchParams__:' + Math.random()
+;
+
+function appendTo(dict, name, value) {
+  if (name in dict) {
+    dict[name].push('' + value);
+  } else {
+    dict[name] = isArray(value) ? value : ['' + value];
+  }
+}
+
+function decode(str) {
+  return decodeURIComponent(str.replace(plus, ' '));
+}
+
+function encode(str) {
+  return encodeURIComponent(str).replace(find, replacer);
+}
+
+function isIterable() {
+  try {
+    return !!Symbol.iterator;
+  } catch(error) {
+    return false;
+  }
+}
+
+URLSearchParamsProto.append = function append(name, value) {
+  appendTo(this[secret], name, value);
+};
+
+URLSearchParamsProto.delete = function del(name) {
+  delete this[secret][name];
+};
+
+URLSearchParamsProto.get = function get(name) {
+  var dict = this[secret];
+  return name in dict ? dict[name][0] : null;
+};
+
+URLSearchParamsProto.getAll = function getAll(name) {
+  var dict = this[secret];
+  return name in dict ? dict[name].slice(0) : [];
+};
+
+URLSearchParamsProto.has = function has(name) {
+  return name in this[secret];
+};
+
+URLSearchParamsProto.set = function set(name, value) {
+  this[secret][name] = ['' + value];
+};
+
+URLSearchParamsProto.forEach = function forEach(callback, thisArg) {
+  var dict = this[secret];
+  Object.getOwnPropertyNames(dict).forEach(function(name) {
+    dict[name].forEach(function(value) {
+      callback.call(thisArg, value, name, this);
+    }, this);
+  }, this);
+};
+
+URLSearchParamsProto.keys = function keys() {
+  var items = [];
+  this.forEach(function(value, name) { items.push(name); });
+  var iterator = {
+    next: function() {
+      var value = items.shift();
+      return {done: value === undefined, value: value};
+    }
+  };
+
+  if (iterable) {
+    iterator[Symbol.iterator] = function() {
+      return iterator;
+    };
+  }
+
+  return iterator;
+};
+
+URLSearchParamsProto.values = function values() {
+  var items = [];
+  this.forEach(function(value) { items.push(value); });
+  var iterator = {
+    next: function() {
+      var value = items.shift();
+      return {done: value === undefined, value: value};
+    }
+  };
+
+  if (iterable) {
+    iterator[Symbol.iterator] = function() {
+      return iterator;
+    };
+  }
+
+  return iterator;
+};
+
+URLSearchParamsProto.entries = function entries() {
+  var items = [];
+  this.forEach(function(value, name) { items.push([name, value]); });
+  var iterator = {
+    next: function() {
+      var value = items.shift();
+      return {done: value === undefined, value: value};
+    }
+  };
+
+  if (iterable) {
+    iterator[Symbol.iterator] = function() {
+      return iterator;
+    };
+  }
+
+  return iterator;
+};
+
+if (iterable) {
+  URLSearchParamsProto[Symbol.iterator] = URLSearchParamsProto.entries;
+}
+
+/*
+URLSearchParamsProto.toBody = function() {
+  return new Blob(
+    [this.toString()],
+    {type: 'application/x-www-form-urlencoded'}
+  );
+};
+*/
+
+URLSearchParamsProto.toJSON = function toJSON() {
+  return {};
+};
+
+URLSearchParamsProto.toString = function toString() {
+  var dict = this[secret], query = [], i, key, name, value;
+  for (key in dict) {
+    name = encode(key);
+    for (
+      i = 0,
+      value = dict[key];
+      i < value.length; i++
+    ) {
+      query.push(name + '=' + encode(value[i]));
+    }
+  }
+  return query.join('&');
+};
+
+module.exports = global.URLSearchParams || URLSearchParams;
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ })
 /******/ ]);
