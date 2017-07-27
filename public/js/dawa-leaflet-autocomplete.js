@@ -5,7 +5,7 @@ var dawaAutocomplete2 = require('dawa-autocomplete2')
 
 function selected(map) {
   return function (event) {
-    fetch(dawautil.danUrl(event.data.href, {struktur: 'mini'})).then( response => {
+    fetch(dawautil.danUrl(event.data.href, {struktur: 'mini'})).then( function(response) {
       response.json().then( function ( adgangsadresse ) {
         var marker= L.circleMarker(L.latLng(adgangsadresse.y, adgangsadresse.x), {color: 'red', fillColor: 'red', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
         var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/adgangsadresser?id="+adgangsadresse.id+"'>" + dawautil.formatAdgangsadresse(adgangsadresse) + "</a>"),{autoPan: true});

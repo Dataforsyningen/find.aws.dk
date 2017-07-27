@@ -2,7 +2,7 @@
 
 var kort= require('dawa-kort')
   , dawalautocomplete= require('./dawa-leaflet-autocomplete.js')
-  , dawalgrafik= require('./dawa-leaflet-grafik.js')
+ // , dawalgrafik= require('./dawa-leaflet-grafik.js')
   , dawautil= require('dawa-util')
   , URLSearchParams = require('url-search-params')  
   , dawaois= require('./dawa-ois-koder.js');
