@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 var kort= require('dawa-kort')
   , dawalautocomplete= require('./dawa-leaflet-autocomplete.js')
@@ -41,14 +41,14 @@ var options= {
   //   callback: centerMap
   // }
   ]
-}
+};
 
 function main() { 
   fetch('/getticket').then(function (response) {
     response.text().then(function (ticket) {      
       map= kort.viskort('map', ticket, options);
       dawalautocomplete.search().addTo(map);
-    })
+    });
   });  
 }
 
@@ -75,8 +75,8 @@ function nærmesteAdgangsadresse(e) {
     
     map.setView(L.latLng(adgangsadresse.y, adgangsadresse.x),12);
     popup.openPopup();
-  })
-};
+  });
+}
 
 
 function nærmesteBygning(e) {
@@ -131,8 +131,8 @@ function nærmesteVejstykke(e) {
     var layer= L.geoJSON(vejstykke).addTo(map);
     var popup= layer.bindPopup("<a target='_blank' href='https://dawa.aws.dk/vejstykker?kode="+vejstykke.properties.kode+"&kommunekode="+vejstykke.properties.kommunekode+"'>" + vejstykke.properties.navn + " (" + vejstykke.properties.kode + ")" + "</a>");
     popup.openPopup();
-  })
-};
+  });
+}
 
 function hvor(e) {
     var antal= 0;
@@ -145,7 +145,7 @@ function hvor(e) {
 
     // sogn
     promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/sogne/reverse",{x: e.latlng.lng, y: e.latlng.lat})));
-    promises[antal].format= formatdata("Sogn", 'sogne');;
+    promises[antal].format= formatdata("Sogn", 'sogne');
     antal++;
 
     // postnummer
@@ -209,7 +209,7 @@ function hvor(e) {
       .setLatLng(punkt)
       .setContent(tekst)
       .openOn(map);
-    })
+    });
   }
 
   function capitalizeFirstLetter(string) {
@@ -217,7 +217,7 @@ function hvor(e) {
   }
 
   function formatpostnummer(data) {
-    return "<li>Postnummer: <a target='_blank' href='https://dawa.aws.dk/postnumre/"+data.nr+"'>" +  + data.nr + " " + data.navn + "</a></li>";
+    return "<li>Postnummer: <a target='_blank' href='https://dawa.aws.dk/postnumre/"+data.nr+"'>" +  data.nr + " " + data.navn + "</a></li>";
   }
   function formatstorkreds(data) {
     return "<li>Storkreds: <a target='_blank' href='https://dawa.aws.dk/storkredse/"+data.nummer+"'>" + data.navn + " (" + data.nummer + ")" + "</a></li>";
@@ -228,7 +228,7 @@ function hvor(e) {
   }
 
   function formatbebyggelse(data) {
-    let tekst= ''
+    let tekst= '';
     for (var i= 0; i<data.length;i++) {
       tekst= tekst + "<li>" + capitalizeFirstLetter(data[i].type)+": <a target='_blank' href='https://dawa.aws.dk/bebyggelser/"+data[i].id+"'>" + data[i].navn + "</a></li>";
     }

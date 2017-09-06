@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 var express = require('express')
   , kf = require('kf-getticket')
@@ -66,4 +66,4 @@ kf.getTicket(usr,pw).then(ticket => {
 })
 .catch(err => {
   console.log("Ukendt username og password (%s)",err);
-})
+});
