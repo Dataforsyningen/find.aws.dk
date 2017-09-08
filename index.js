@@ -39,7 +39,7 @@ app.get('/oisbygninger', function (req, res, next) {
   options.url='https://dawa.aws.dk/ois/bygninger';
   options.qs= {};
   options.qs.format= req.query.format;
-  options.qs.x= req.query.x;
+  options.qs .x= req.query.x;
   options.qs.y= req.query.y;
   options.qs.medtagugyldige= req.query.medtagugyldige;
   //options.resolveWithFullResponse= true; 
@@ -54,10 +54,13 @@ app.get('/oisbygninger', function (req, res, next) {
 }); 
 
 var usr= process.argv[2]
-  , pw= process.argv[3];
+  , pw= process.argv[3]
+  , port= process.argv[4];
+
+if (!port) port= 3000;
 
 kf.getTicket(usr,pw).then(ticket => {
-  var server = app.listen(3000, function () {
+  var server = app.listen(port, function () {
     var host = server.address().address;
     var port = server.address().port;
 
