@@ -100,10 +100,19 @@ exports.corssupported= function () {
   return "withCredentials" in (new XMLHttpRequest());
 }
 
-exports.formatAdgangsadresse= function (mini, enlinje) {
+function formatAa(vejnavn,husnr,supplerendebynavn,postnr,postnrnavn,enlinje) {
 	let separator= (enlinje || typeof enlinje != 'undefined')?", ":"<br/>";
-	let supplerendebynavn= mini.supplerendebynavn?separator + mini.supplerendebynavn:"";
-	return mini.vejnavn + " " + mini.husnr + supplerendebynavn + separator + mini.postnr + " " + mini.postnrnavn;	
+	supplerendebynavn= supplerendebynavn?separator + supplerendebynavn:"";
+	return `${vejnavn} ${husnr}${supplerendebynavn}${separator}${postnr} ${postnrnavn}`;
+}
+
+exports.formatAdgangsadresse= function (record, enlinje) {
+	if (record.vejstykke) {
+		return formatAa(record.vejstykke.navn, record.husnr, record.supplerendebynavn, record.postnummer.nr, record.postnummer.navn, enlinje);
+	}
+	else {
+		return formatAa(record.vejnavn, record.husnr, record.supplerendebynavn, record.postnr, record.postnrnavn, enlinje);
+	}	
 }
 
 exports.formatAdresse= function (mini, enlinje) {
@@ -426,6 +435,8 @@ function main() {
     response.text().then(function (ticket) {      
       map= kort.viskort('map', ticket, options);
       dawalautocomplete.search().addTo(map);
+      var center= kort.beregnCenter();
+      map.setView(center,2);
     });
   });  
 }
@@ -636,12 +647,23 @@ proj4.defs([
   ]
 ]);
 
+// var maxBounds= [
+//   [57.751949, 15.193240],
+//   [54.559132, 8.074720]
+// ];
+
 var maxBounds= [
-  [57.751949, 15.193240],
-  [54.559132, 8.074720]
+  [58.4744, 17.5575],
+  [53.015, 2.47833]
 ];
 
 exports.maxBounds= maxBounds;
+
+exports.beregnCenter= function() {
+  var x= (maxBounds[0][0]-maxBounds[1][0])/2+maxBounds[1][0]+0.5,
+      y= (maxBounds[0][1]-maxBounds[1][1])/2+maxBounds[1][1];
+  return L.latLng(x,y);
+}
 
 exports.viskort = function(id,ticket,options) {
 	var crs = new L.Proj.CRS('EPSG:25832',
@@ -689,11 +711,23 @@ exports.viskort = function(id,ticket,options) {
  		, kommunekort= danKort('dagi', 'kommune', 'default','true');
 
 	var adressekort = L.tileLayer.wms('https://kort.aws.dk/geoserver/aws4/wms', {
-	    transparent: true,
-	    layers: 'adgangsadresser',
-	    format: 'image/png',
-	    continuousWorld: true
-	  });
+      transparent: true,
+      layers: 'adgangsadresser',
+      format: 'image/png',
+      continuousWorld: true
+    });
+  var vejpunktkort = L.tileLayer.wms('https://kort.aws.dk/geoserver/aws4/wms', {
+      transparent: true,
+      layers: 'vejpunkter',
+      format: 'image/png',
+      continuousWorld: true
+    });
+  var vejpunktlinjekort = L.tileLayer.wms('https://kort.aws.dk/geoserver/aws4/wms', {
+      transparent: true,
+      layers: 'vejpunktlinjer',
+      format: 'image/png',
+      continuousWorld: true
+    });
 
  	 var baselayers = {
     "Skærmkort": skaermkort,
@@ -705,10 +739,12 @@ exports.viskort = function(id,ticket,options) {
   };
 
   var overlays = {
-   	"Matrikelkort": matrikelkort,
-   	"Kommunekort": kommunekort,
-   	"Postnummerkort": postnrkort,
-   	"Adressekort": adressekort
+   	"Matrikler": matrikelkort,
+   	"Kommuner": kommunekort,
+   	"Postnumre": postnrkort,
+    "Adresser": adressekort,
+    "Vejpunkter": vejpunktkort,
+    "Vejpunktlinjer": vejpunktlinjekort
   };
 
   L.control.layers(baselayers, overlays, {position: 'bottomleft'}).addTo(map);
@@ -741,14 +777,17 @@ exports.viskort = function(id,ticket,options) {
   });
 
 	map.fitBounds(maxBounds);
+  //map.panTo(new L.LatLng(40.737, -73.923));
 
 	return map;
 };
 
-
-
 exports.etrs89towgs84= function(x,y) {
 	  return proj4('EPSG:25832','EPSG:4326', {x:x, y:y});  
+}
+
+exports.geojsontowgs84= function(geojson) {
+  return L.Proj.geoJson(geojson);
 }
 
 /***/ }),
@@ -763,12 +802,19 @@ var dawaAutocomplete2 = __webpack_require__(6)
 
 function selected(map) {
   return function (event) {
-    fetch(dawautil.danUrl(event.data.href, {struktur: 'mini'})).then( function(response) {
+    fetch(event.data.href).then( function(response) {
       response.json().then( function ( adgangsadresse ) {
-        var marker= L.circleMarker(L.latLng(adgangsadresse.y, adgangsadresse.x), {color: 'red', fillColor: 'red', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
+        var x= adgangsadresse.adgangspunkt.koordinater[1]
+          , y= adgangsadresse.adgangspunkt.koordinater[0];
+        var marker= L.circleMarker(L.latLng(x, y), {color: 'red', fillColor: 'red', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
         var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/adgangsadresser?id="+adgangsadresse.id+"'>" + dawautil.formatAdgangsadresse(adgangsadresse) + "</a>"),{autoPan: true});
-    
-        map.setView(L.latLng(adgangsadresse.y, adgangsadresse.x),12);
+        if (adgangsadresse.vejpunkt) {
+          var vx= adgangsadresse.vejpunkt.koordinater[1]
+            , vy= adgangsadresse.vejpunkt.koordinater[0];
+          var vpmarker= L.circleMarker(L.latLng(vx, vy), {color: 'blue', fillColor: 'blue', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
+          vpmarker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/adgangsadresser?id="+adgangsadresse.id+"'>" + dawautil.formatAdgangsadresse(adgangsadresse) + "</a>"),{autoPan: true});
+        }
+        map.setView(L.latLng(x, y),12);
         popup.openPopup();
       });
     });
