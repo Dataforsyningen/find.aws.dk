@@ -57,7 +57,7 @@ function main() {
 main();
 
 function nærmesteAdgangsadresse(e) {
-  fetch(dawautil.danUrl("https://dawa.aws.dk/adgangsadresser/reverse",{struktur: 'mini', x: e.latlng.lng, y: e.latlng.lat, medtagugyldige: true}))
+  fetch(dawautil.danUrl("https://dawa.aws.dk/adgangsadresser/reverse",{x: e.latlng.lng, y: e.latlng.lat, medtagugyldige: true}))
   .catch(function (error) {
     alert(error.message);
   })
@@ -72,11 +72,21 @@ function nærmesteAdgangsadresse(e) {
     }
   }) 
   .then( function ( adgangsadresse ) { 
-    var marker= L.circleMarker(L.latLng(adgangsadresse.y, adgangsadresse.x), {color: 'red', fillColor: 'red', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
+
+    var x= adgangsadresse.adgangspunkt.koordinater[1]
+      , y= adgangsadresse.adgangspunkt.koordinater[0];
+    var marker= L.circleMarker(L.latLng(x, y), {color: 'red', fillColor: 'red', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
     var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/adgangsadresser?id="+adgangsadresse.id+"'>" + dawautil.formatAdgangsadresse(adgangsadresse) + "</a>"),{autoPan: true});
-    
-    map.setView(L.latLng(adgangsadresse.y, adgangsadresse.x),12);
+    if (adgangsadresse.vejpunkt) {
+      var vx= adgangsadresse.vejpunkt.koordinater[1]
+        , vy= adgangsadresse.vejpunkt.koordinater[0];
+      var vpmarker= L.circleMarker(L.latLng(vx, vy), {color: 'blue', fillColor: 'blue', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
+      vpmarker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/adgangsadresser?id="+adgangsadresse.id+"'>" + dawautil.formatAdgangsadresse(adgangsadresse) + "</a>"),{autoPan: true});
+    }
+
+    map.setView(L.latLng(x, y),12);
     popup.openPopup();
+
   });
 }
 
