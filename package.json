@@ -1,6 +1,6 @@
 {
   "name": "find.aws.dk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Find en adresse på et kort",
   "main": "index.js",
   "scripts": {
