@@ -196,7 +196,7 @@ function hvor(e) {
     antal++;
 
     // stednavne
-    promises.push(fetch(dawautil.danUrl("https://dawa-p2.aws.dk/stednavne",{x: e.latlng.lng, y: e.latlng.lat})));
+    promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/stednavne",{x: e.latlng.lng, y: e.latlng.lat})));
     promises[antal].format= formatstednavne;
     antal++;
 
@@ -242,7 +242,7 @@ function hvor(e) {
   function formatstednavne(data) {
     let tekst= '';
     for (var i= 0; i<data.length;i++) {
-      tekst= tekst + "<li>" + capitalizeFirstLetter(data[i].undertype)+": <a target='_blank' href='https://dawa-p2.aws.dk/stednavne/"+data[i].id+"'>" + data[i].navn + "</a></li>";
+      tekst= tekst + "<li>" + capitalizeFirstLetter(data[i].undertype)+": <a target='_blank' href='https://dawa.aws.dk/stednavne/"+data[i].id+"'>" + data[i].navn + "</a></li>";
     }
     return tekst;
   }
