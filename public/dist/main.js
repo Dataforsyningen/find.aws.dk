@@ -65,36 +65,9 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1,eval)("this");
-} catch(e) {
-	// This works if the window reference is available
-	if(typeof window === "object")
-		g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-
-/***/ }),
-/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var URLSearchParams = __webpack_require__(2);
+var URLSearchParams = __webpack_require__(1);
 
 exports.corssupported= function () {
   return "withCredentials" in (new XMLHttpRequest());
@@ -130,7 +103,7 @@ exports.danUrl= function (path, query) {
 }
 
 /***/ }),
-/* 2 */
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -378,7 +351,34 @@ URLSearchParamsProto.toString = function toString() {
 };
 
 module.exports = global.URLSearchParams || URLSearchParams;
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
 
 /***/ }),
 /* 3 */
@@ -390,8 +390,8 @@ module.exports = global.URLSearchParams || URLSearchParams;
 var kort= __webpack_require__(4)
   , dawalautocomplete= __webpack_require__(5)
  // , dawalgrafik= require('./dawa-leaflet-grafik.js')
-  , dawautil= __webpack_require__(1)
-  , URLSearchParams = __webpack_require__(2)  
+  , dawautil= __webpack_require__(0)
+  , URLSearchParams = __webpack_require__(1)  
   , dawaois= __webpack_require__(7);
 
 var map;
@@ -406,19 +406,19 @@ var options= {
   // },
   {
     text: 'Adgangsadresse?',
-    callback: nærmesteAdgangsadresse
+    callback: kort.nærmesteAdgangsadresse
   },
   {
     text: 'Bygning?',
-    callback: nærmesteBygning
+    callback: kort.nærmesteBygning
   },
   {
     text: 'Vej?',
-    callback: nærmesteVejstykke
+    callback: kort.nærmesteVejstykke
   },
   {
     text: 'Hvor?',
-    callback: hvor
+    callback: kort.hvor
   }
   // {
   //   text: 'Kommune?',
@@ -443,201 +443,6 @@ function main() {
 
 main();
 
-function nærmesteAdgangsadresse(e) {
-  fetch(dawautil.danUrl("https://dawa.aws.dk/adgangsadresser/reverse",{x: e.latlng.lng, y: e.latlng.lat, medtagugyldige: true}))
-  .catch(function (error) {
-    alert(error.message);
-  })
-  .then(function(response) {
-    if (response.status >=400 && response.status <= 499) {
-      response.json().then(function (object) {
-        alert(object.type + ': ' + object.title);
-      });
-    }
-    else if (response.status >= 200 && response.status <=299 ){
-      return response.json();
-    }
-  }) 
-  .then( function ( adgangsadresse ) { 
-
-    var x= adgangsadresse.adgangspunkt.koordinater[1]
-      , y= adgangsadresse.adgangspunkt.koordinater[0];
-    var marker= L.circleMarker(L.latLng(x, y), {color: 'red', fillColor: 'red', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
-    var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/adgangsadresser?id="+adgangsadresse.id+"'>" + dawautil.formatAdgangsadresse(adgangsadresse) + "</a>"),{autoPan: true});
-    if (adgangsadresse.vejpunkt) {
-      var vx= adgangsadresse.vejpunkt.koordinater[1]
-        , vy= adgangsadresse.vejpunkt.koordinater[0];
-      var vpmarker= L.circleMarker(L.latLng(vx, vy), {color: 'blue', fillColor: 'blue', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
-      vpmarker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/adgangsadresser?id="+adgangsadresse.id+"'>" + dawautil.formatAdgangsadresse(adgangsadresse) + "</a>"),{autoPan: true});
-    }
-
-    map.setView(L.latLng(x, y),12);
-    popup.openPopup();
-
-  });
-}
-
-
-function nærmesteBygning(e) {
-  var params = new URLSearchParams();
-  params.set('format','json');
-  params.set('x', e.latlng.lng);
-  params.set('y', e.latlng.lat);
-  params.set('medtagugyldige', true);
-  var url= '/oisbygninger?'+params.toString();
-  fetch(url)
-  .catch(function (error) {
-    alert(error.message);
-  })
-  .then(function(response) {
-    if (response.status >=400 && response.status <= 499) {
-      response.text().then(function (text) {
-        alert(text);
-      });
-    }
-    else if (response.status >= 200 && response.status <=299 ){
-      return response.json();
-    }
-  }) 
-  .then( function ( bygninger ) {
-    var bygning= bygninger[0];
-    var punkt=  L.latLng(bygning.bygningspunkt.koordinater[1], bygning.bygningspunkt.koordinater[0]);
-    var marker= L.circleMarker(punkt, {color: 'blue', fillColor: 'blue', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
-    var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='" + url + "'>" + dawaois.anvendelseskoder[bygning.BYG_ANVEND_KODE] + " fra " + bygning.OPFOERELSE_AAR + "</a>"),{autoPan: true});
-    
-    map.setView(punkt,12);
-    popup.openPopup();
-  //  map.fitBounds(geojsonlayer.getBounds());
-  });
-}
-
-function nærmesteVejstykke(e) {
-  fetch(dawautil.danUrl("https://dawa.aws.dk/vejstykker/reverse",{format: 'geojson', x: e.latlng.lng, y: e.latlng.lat}))
-  .catch(function (error) {
-    alert(error.message);
-  })
-  .then(function(response) {
-    if (response.status >=400 && response.status <= 499) {
-      response.json().then(function (object) {
-        alert(object.type + ': ' + object.title);
-      });
-    }
-    else if (response.status >= 200 && response.status <=299 ){
-      return response.json();
-    }
-  }) 
-  .then( function ( vejstykke ) { 
-    var layer= L.geoJSON(vejstykke).addTo(map);
-    var popup= layer.bindPopup("<a target='_blank' href='https://dawa.aws.dk/vejstykker?kode="+vejstykke.properties.kode+"&kommunekode="+vejstykke.properties.kommunekode+"'>" + vejstykke.properties.navn + " (" + vejstykke.properties.kode + ")" + "</a>");
-    popup.openPopup();
-  });
-}
-
-function hvor(e) {
-    var antal= 0;
-    var promises= [];
-
-    // jordstykke
-    promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/jordstykker/reverse",{x: e.latlng.lng, y: e.latlng.lat})));
-    promises[antal].format= formatjordstykke;
-    antal++;
-
-    // sogn
-    promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/sogne/reverse",{x: e.latlng.lng, y: e.latlng.lat})));
-    promises[antal].format= formatdata("Sogn", 'sogne');
-    antal++;
-
-    // postnummer
-    promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/postnumre/reverse",{x: e.latlng.lng, y: e.latlng.lat})));
-    promises[antal].format= formatpostnummer;
-    antal++;
-
-    // kommune
-    promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/kommuner/reverse",{x: e.latlng.lng, y: e.latlng.lat})));
-    promises[antal].format= formatdata("Kommune", 'kommuner');
-    antal++;
-
-    // region
-    promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/regioner/reverse",{x: e.latlng.lng, y: e.latlng.lat})));
-    promises[antal].format= formatdata("Region",'regioner');
-    antal++;
-
-    // retskreds
-    promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/retskredse/reverse",{x: e.latlng.lng, y: e.latlng.lat})));
-    promises[antal].format= formatdata("Retskreds", 'retskredse');
-    antal++;
-
-    // politikreds
-    promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/politikredse/reverse",{x: e.latlng.lng, y: e.latlng.lat})));
-    promises[antal].format= formatdata("Politikreds", 'politikredse');
-    antal++;
-
-    // opstillingskreds
-    promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/opstillingskredse/reverse",{x: e.latlng.lng, y: e.latlng.lat})));
-    promises[antal].format= formatdata("Opstillingskreds", 'opstillingskredse');
-    antal++;
-
-    // storkreds
-    promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/storkredse/reverse",{x: e.latlng.lng, y: e.latlng.lat})));
-    promises[antal].format= formatstorkreds;
-    antal++;
-
-    // stednavne
-    promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/stednavne",{x: e.latlng.lng, y: e.latlng.lat})));
-    promises[antal].format= formatstednavne;
-    antal++;
-
-    Promise.all(promises) 
-    .catch(function (error) {
-      alert(error.message);
-    })
-    .then(function(responses) {
-      for(let i= 0; i<responses.length; i++) {
-        responses[i]= responses[i].json();
-      }
-      return Promise.all(responses);
-    })
-    .then(function(data) {
-      let tekst= '<small><ul>';
-      for(let i=0; i<data.length; i++) {
-        tekst= tekst + promises[i].format(data[i]);
-      } 
-      tekst= tekst + "</ul></small>";     
-      var punkt=  e.latlng;
-      var popup = L.popup()
-      .setLatLng(punkt)
-      .setContent(tekst)
-      .openOn(map);
-    });
-  }
-
-  function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  }
-
-  function formatpostnummer(data) {
-    return "<li>Postnummer: <a target='_blank' href='https://dawa.aws.dk/postnumre/"+data.nr+"'>" +  data.nr + " " + data.navn + "</a></li>";
-  }
-  function formatstorkreds(data) {
-    return "<li>Storkreds: <a target='_blank' href='https://dawa.aws.dk/storkredse/"+data.nummer+"'>" + data.navn + " (" + data.nummer + ")" + "</a></li>";
-  }
-
-  function formatjordstykke(data) {
-    return "<li>Jordstykke: <a target='_blank' href='https://dawa.aws.dk/jordstykker/"+data.ejerlav.kode+"/"+data.matrikelnr+"'>" + (data.ejerlav.navn?data.ejerlav.navn+" ":"") + data.ejerlav.kode + " " +data.matrikelnr + "</a></li>";
-  }
-
-  function formatstednavne(data) {
-    let tekst= '';
-    for (var i= 0; i<data.length;i++) {
-      tekst= tekst + "<li>" + capitalizeFirstLetter(data[i].undertype)+": <a target='_blank' href='https://dawa.aws.dk/stednavne/"+data[i].id+"'>" + data[i].navn + "</a></li>";
-    }
-    return tekst;
-  }
-
-  function formatdata(titel,id) {
-    return function (data) { return "<li>" + titel + ": <a target='_blank' href='https://dawa.aws.dk/"+id+"/"+data.kode+"'>" + data.navn + " (" + data.kode + ")" + "</a></li>"};
-  }
-
 
 
 /***/ }),
@@ -646,6 +451,8 @@ function hvor(e) {
 
 "use strict";
 
+
+var dawautil= __webpack_require__(0);
 
 proj4.defs([
   [
@@ -800,6 +607,210 @@ exports.geojsontowgs84= function(geojson) {
   return L.Proj.geoJson(geojson);
 }
 
+
+exports.nærmesteAdgangsadresse= function(e) {
+  fetch(dawautil.danUrl("https://dawa.aws.dk/adgangsadresser/reverse",{x: e.latlng.lng, y: e.latlng.lat, medtagugyldige: true}))
+  .catch(function (error) {
+    alert(error.message);
+  })
+  .then(function(response) {
+    if (response.status >=400 && response.status <= 499) {
+      response.json().then(function (object) {
+        alert(object.type + ': ' + object.title);
+      });
+    }
+    else if (response.status >= 200 && response.status <=299 ){
+      return response.json();
+    }
+  }) 
+  .then( function ( adgangsadresse ) { 
+
+    var x= adgangsadresse.adgangspunkt.koordinater[1]
+      , y= adgangsadresse.adgangspunkt.koordinater[0];
+    var marker= L.circleMarker(L.latLng(x, y), {color: 'red', fillColor: 'red', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
+    var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/adgangsadresser?id="+adgangsadresse.id+"'>" + dawautil.formatAdgangsadresse(adgangsadresse) + "</a>"),{autoPan: true});
+    if (adgangsadresse.vejpunkt) {
+      var vx= adgangsadresse.vejpunkt.koordinater[1]
+        , vy= adgangsadresse.vejpunkt.koordinater[0];
+      var vpmarker= L.circleMarker(L.latLng(vx, vy), {color: 'blue', fillColor: 'blue', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
+      vpmarker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/adgangsadresser?id="+adgangsadresse.id+"'>" + dawautil.formatAdgangsadresse(adgangsadresse) + "</a>"),{autoPan: true});
+    }
+
+    map.setView(L.latLng(x, y),12);
+    popup.openPopup();
+
+  });
+}
+
+
+exports.nærmesteBygning= function(e) {
+  var params = new URLSearchParams();
+  params.set('format','json');
+  params.set('x', e.latlng.lng);
+  params.set('y', e.latlng.lat);
+  params.set('medtagugyldige', true);
+  var url= '/oisbygninger?'+params.toString();
+  fetch(url)
+  .catch(function (error) {
+    alert(error.message);
+  })
+  .then(function(response) {
+    if (response.status >=400 && response.status <= 499) {
+      response.text().then(function (text) {
+        alert(text);
+      });
+    }
+    else if (response.status >= 200 && response.status <=299 ){
+      return response.json();
+    }
+  }) 
+  .then( function ( bygninger ) {
+    var bygning= bygninger[0];
+    var punkt=  L.latLng(bygning.bygningspunkt.koordinater[1], bygning.bygningspunkt.koordinater[0]);
+    var marker= L.circleMarker(punkt, {color: 'blue', fillColor: 'blue', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
+    var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='" + url + "'>" + dawaois.anvendelseskoder[bygning.BYG_ANVEND_KODE] + " fra " + bygning.OPFOERELSE_AAR + "</a>"),{autoPan: true});
+    
+    map.setView(punkt,12);
+    popup.openPopup();
+  //  map.fitBounds(geojsonlayer.getBounds());
+  });
+}
+
+exports.nærmesteVejstykke= function(e) {
+  fetch(dawautil.danUrl("https://dawa.aws.dk/vejstykker/reverse",{format: 'geojson', x: e.latlng.lng, y: e.latlng.lat}))
+  .catch(function (error) {
+    alert(error.message);
+  })
+  .then(function(response) {
+    if (response.status >=400 && response.status <= 499) {
+      response.json().then(function (object) {
+        alert(object.type + ': ' + object.title);
+      });
+    }
+    else if (response.status >= 200 && response.status <=299 ){
+      return response.json();
+    }
+  }) 
+  .then( function ( vejstykke ) { 
+    var layer= L.geoJSON(vejstykke).addTo(map);
+    var popup= layer.bindPopup("<a target='_blank' href='https://dawa.aws.dk/vejstykker?kode="+vejstykke.properties.kode+"&kommunekode="+vejstykke.properties.kommunekode+"'>" + vejstykke.properties.navn + " (" + vejstykke.properties.kode + ")" + "</a>");
+    popup.openPopup();
+  });
+}
+
+exports.hvor= function(e) {
+    var antal= 0;
+    var promises= [];
+
+    // jordstykke
+    promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/jordstykker/reverse",{x: e.latlng.lng, y: e.latlng.lat})));
+    promises[antal].format= formatjordstykke;
+    antal++;
+
+    // sogn
+    promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/sogne/reverse",{x: e.latlng.lng, y: e.latlng.lat})));
+    promises[antal].format= formatdata("Sogn", 'sogne');
+    antal++;
+
+    // postnummer
+    promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/postnumre/reverse",{x: e.latlng.lng, y: e.latlng.lat})));
+    promises[antal].format= formatpostnummer;
+    antal++;
+
+    // kommune
+    promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/kommuner/reverse",{x: e.latlng.lng, y: e.latlng.lat})));
+    promises[antal].format= formatdata("Kommune", 'kommuner');
+    antal++;
+
+    // region
+    promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/regioner/reverse",{x: e.latlng.lng, y: e.latlng.lat})));
+    promises[antal].format= formatdata("Region",'regioner');
+    antal++;
+
+    // retskreds
+    promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/retskredse/reverse",{x: e.latlng.lng, y: e.latlng.lat})));
+    promises[antal].format= formatdata("Retskreds", 'retskredse');
+    antal++;
+
+    // politikreds
+    promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/politikredse/reverse",{x: e.latlng.lng, y: e.latlng.lat})));
+    promises[antal].format= formatdata("Politikreds", 'politikredse');
+    antal++;
+
+    // opstillingskreds
+    promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/opstillingskredse/reverse",{x: e.latlng.lng, y: e.latlng.lat})));
+    promises[antal].format= formatdata("Opstillingskreds", 'opstillingskredse');
+    antal++;
+
+    // storkreds
+    promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/storkredse/reverse",{x: e.latlng.lng, y: e.latlng.lat})));
+    promises[antal].format= formatstorkreds;
+    antal++;
+
+    // stednavne
+    promises.push(fetch(dawautil.danUrl("https://dawa.aws.dk/stednavne",{x: e.latlng.lng, y: e.latlng.lat})));
+    promises[antal].format= formatstednavne;
+    antal++;
+
+    Promise.all(promises) 
+    .catch(function (error) {
+      alert(error.message);
+    })
+    .then(function(responses) {      
+      for (var i= responses.length-1; i>=0; i--) {
+        if (responses[i].ok) {
+          responses[i]= responses[i].json();
+        }
+        else {
+          responses.splice(i, 1);
+          promises.splice(i, 1);
+        }
+      }
+      return Promise.all(responses);
+    })
+    .then(function(data) {
+      if (data.length === 0) return;
+      let tekst= '<small><ul>';
+      for(let i=0; i<data.length; i++) {
+        tekst= tekst + promises[i].format(data[i]);
+      } 
+      tekst= tekst + "</ul></small>";     
+      var punkt=  e.latlng;
+      var popup = L.popup()
+      .setLatLng(punkt)
+      .setContent(tekst)
+      .openOn(map);
+    });
+  }
+
+  function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
+  function formatpostnummer(data) {
+    return "<li>Postnummer: <a target='_blank' href='https://dawa.aws.dk/postnumre/"+data.nr+"'>" +  data.nr + " " + data.navn + "</a></li>";
+  }
+  function formatstorkreds(data) {
+    return "<li>Storkreds: <a target='_blank' href='https://dawa.aws.dk/storkredse/"+data.nummer+"'>" + data.navn + " (" + data.nummer + ")" + "</a></li>";
+  }
+
+  function formatjordstykke(data) {
+    return "<li>Jordstykke: <a target='_blank' href='https://dawa.aws.dk/jordstykker/"+data.ejerlav.kode+"/"+data.matrikelnr+"'>" + (data.ejerlav.navn?data.ejerlav.navn+" ":"") + data.ejerlav.kode + " " +data.matrikelnr + "</a></li>";
+  }
+
+  function formatstednavne(data) {
+    let tekst= '';
+    for (var i= 0; i<data.length;i++) {
+      tekst= tekst + "<li>" + capitalizeFirstLetter(data[i].undertype)+": <a target='_blank' href='https://dawa.aws.dk/stednavne/"+data[i].id+"'>" + data[i].navn + "</a></li>";
+    }
+    return tekst;
+  }
+
+  function formatdata(titel,id) {
+    return function (data) { return "<li>" + titel + ": <a target='_blank' href='https://dawa.aws.dk/"+id+"/"+data.kode+"'>" + data.navn + " (" + data.kode + ")" + "</a></li>"};
+  }
+
+
 /***/ }),
 /* 5 */
 /***/ (function(module, exports, __webpack_require__) {
@@ -808,7 +819,7 @@ exports.geojsontowgs84= function(geojson) {
 
 
 var dawaAutocomplete2 = __webpack_require__(6)
-  , dawautil = __webpack_require__(1);
+  , dawautil = __webpack_require__(0);
 
 function selected(map) {
   return function (event) {
@@ -2821,7 +2832,7 @@ function dawaAutocomplete(inputElm, options) {
 
 
 
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(0)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(2)))
 
 /***/ }),
 /* 7 */
