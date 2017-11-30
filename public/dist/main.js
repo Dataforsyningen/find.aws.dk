@@ -388,13 +388,15 @@ module.exports = g;
 
 
 var kort= __webpack_require__(4)
-  , dawalautocomplete= __webpack_require__(5)
+  , dawalautocomplete= __webpack_require__(6)
  // , dawalgrafik= require('./dawa-leaflet-grafik.js')
   , dawautil= __webpack_require__(0)
-  , URLSearchParams = __webpack_require__(1)  
-  , dawaois= __webpack_require__(7);
 
 var map;
+
+function getMap() {
+  return map;
+}
 
 var options= {
   contextmenu: true,
@@ -406,19 +408,19 @@ var options= {
   // },
   {
     text: 'Adgangsadresse?',
-    callback: kort.nærmesteAdgangsadresse
+    callback: kort.nærmesteAdgangsadresse(getMap)
   },
   {
     text: 'Bygning?',
-    callback: kort.nærmesteBygning
+    callback: kort.nærmesteBygning(getMap)
   },
   {
     text: 'Vej?',
-    callback: kort.nærmesteVejstykke
+    callback: kort.nærmesteVejstykke(getMap)
   },
   {
     text: 'Hvor?',
-    callback: kort.hvor
+    callback: kort.hvor(getMap)
   }
   // {
   //   text: 'Kommune?',
@@ -452,7 +454,9 @@ main();
 "use strict";
 
 
-var dawautil= __webpack_require__(0);
+var dawautil= __webpack_require__(0)
+  , URLSearchParams = __webpack_require__(1)  
+  , dawaois= __webpack_require__(5);
 
 proj4.defs([
   [
@@ -480,7 +484,7 @@ exports.beregnCenter= function() {
   var x= (maxBounds[0][0]-maxBounds[1][0])/2+maxBounds[1][0]+0.5,
       y= (maxBounds[0][1]-maxBounds[1][1])/2+maxBounds[1][1];
   return L.latLng(x,y);
-}
+};
 
 exports.viskort = function(id,ticket,options) {
 	var crs = new L.Proj.CRS('EPSG:25832',
@@ -601,104 +605,110 @@ exports.viskort = function(id,ticket,options) {
 
 exports.etrs89towgs84= function(x,y) {
 	  return proj4('EPSG:25832','EPSG:4326', {x:x, y:y});  
-}
+};
 
 exports.geojsontowgs84= function(geojson) {
   return L.Proj.geoJson(geojson);
-}
+};
 
 
-exports.nærmesteAdgangsadresse= function(e) {
-  fetch(dawautil.danUrl("https://dawa.aws.dk/adgangsadresser/reverse",{x: e.latlng.lng, y: e.latlng.lat, medtagugyldige: true}))
-  .catch(function (error) {
-    alert(error.message);
-  })
-  .then(function(response) {
-    if (response.status >=400 && response.status <= 499) {
-      response.json().then(function (object) {
-        alert(object.type + ': ' + object.title);
-      });
-    }
-    else if (response.status >= 200 && response.status <=299 ){
-      return response.json();
-    }
-  }) 
-  .then( function ( adgangsadresse ) { 
+exports.nærmesteAdgangsadresse= function(getMap) {
+  return function(e) {
+    fetch(dawautil.danUrl("https://dawa.aws.dk/adgangsadresser/reverse",{x: e.latlng.lng, y: e.latlng.lat, medtagugyldige: true}))
+    .catch(function (error) {
+      alert(error.message);
+    })
+    .then(function(response) {
+      if (response.status >=400 && response.status <= 499) {
+        response.json().then(function (object) {
+          alert(object.type + ': ' + object.title);
+        });
+      }
+      else if (response.status >= 200 && response.status <=299 ){
+        return response.json();
+      }
+    }) 
+    .then( function ( adgangsadresse ) { 
 
-    var x= adgangsadresse.adgangspunkt.koordinater[1]
-      , y= adgangsadresse.adgangspunkt.koordinater[0];
-    var marker= L.circleMarker(L.latLng(x, y), {color: 'red', fillColor: 'red', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
-    var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/adgangsadresser?id="+adgangsadresse.id+"'>" + dawautil.formatAdgangsadresse(adgangsadresse) + "</a>"),{autoPan: true});
-    if (adgangsadresse.vejpunkt) {
-      var vx= adgangsadresse.vejpunkt.koordinater[1]
-        , vy= adgangsadresse.vejpunkt.koordinater[0];
-      var vpmarker= L.circleMarker(L.latLng(vx, vy), {color: 'blue', fillColor: 'blue', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
-      vpmarker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/adgangsadresser?id="+adgangsadresse.id+"'>" + dawautil.formatAdgangsadresse(adgangsadresse) + "</a>"),{autoPan: true});
-    }
+      var x= adgangsadresse.adgangspunkt.koordinater[1]
+        , y= adgangsadresse.adgangspunkt.koordinater[0];
+      var marker= L.circleMarker(L.latLng(x, y), {color: 'red', fillColor: 'red', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(getMap());//defaultpointstyle);
+      var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/adgangsadresser?id="+adgangsadresse.id+"'>" + dawautil.formatAdgangsadresse(adgangsadresse) + "</a>"),{autoPan: true});
+      if (adgangsadresse.vejpunkt) {
+        var vx= adgangsadresse.vejpunkt.koordinater[1]
+          , vy= adgangsadresse.vejpunkt.koordinater[0];
+        var vpmarker= L.circleMarker(L.latLng(vx, vy), {color: 'blue', fillColor: 'blue', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(getMap());//defaultpointstyle);
+        vpmarker.bindPopup(L.popup().setContent("<a target='_blank' href='https://dawa.aws.dk/adgangsadresser?id="+adgangsadresse.id+"'>" + dawautil.formatAdgangsadresse(adgangsadresse) + "</a>"),{autoPan: true});
+      }
 
-    map.setView(L.latLng(x, y),12);
-    popup.openPopup();
+      getMap().setView(L.latLng(x, y),12);
+      popup.openPopup();
 
-  });
-}
+    });
+  };
+};
 
+exports.nærmesteBygning= function(getMap) {
+  return function(e) {
+    var params = new URLSearchParams();
+    params.set('format','json');
+    params.set('x', e.latlng.lng);
+    params.set('y', e.latlng.lat);
+    params.set('medtagugyldige', true);
+    var url= '/oisbygninger?'+params.toString();
+    fetch(url)
+    .catch(function (error) {
+      alert(error.message);
+    })
+    .then(function(response) {
+      if (response.status >=400 && response.status <= 499) {
+        response.text().then(function (text) {
+          alert(text);
+        });
+      }
+      else if (response.status >= 200 && response.status <=299 ){
+        return response.json();
+      }
+    }) 
+    .then( function ( bygninger ) {
+      var bygning= bygninger[0];
+      var punkt=  L.latLng(bygning.bygningspunkt.koordinater[1], bygning.bygningspunkt.koordinater[0]);
+      var marker= L.circleMarker(punkt, {color: 'blue', fillColor: 'blue', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(getMap());//defaultpointstyle);
+      var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='" + url + "'>" + dawaois.anvendelseskoder[bygning.BYG_ANVEND_KODE] + " fra " + bygning.OPFOERELSE_AAR + "</a>"),{autoPan: true});
+      
+      getMap().setView(punkt,12);
+      popup.openPopup();
+    //  map.fitBounds(geojsonlayer.getBounds());
+    });
+  };
+};
 
-exports.nærmesteBygning= function(e) {
-  var params = new URLSearchParams();
-  params.set('format','json');
-  params.set('x', e.latlng.lng);
-  params.set('y', e.latlng.lat);
-  params.set('medtagugyldige', true);
-  var url= '/oisbygninger?'+params.toString();
-  fetch(url)
-  .catch(function (error) {
-    alert(error.message);
-  })
-  .then(function(response) {
-    if (response.status >=400 && response.status <= 499) {
-      response.text().then(function (text) {
-        alert(text);
-      });
-    }
-    else if (response.status >= 200 && response.status <=299 ){
-      return response.json();
-    }
-  }) 
-  .then( function ( bygninger ) {
-    var bygning= bygninger[0];
-    var punkt=  L.latLng(bygning.bygningspunkt.koordinater[1], bygning.bygningspunkt.koordinater[0]);
-    var marker= L.circleMarker(punkt, {color: 'blue', fillColor: 'blue', stroke: true, fillOpacity: 1.0, radius: 4, weight: 2, opacity: 1.0}).addTo(map);//defaultpointstyle);
-    var popup= marker.bindPopup(L.popup().setContent("<a target='_blank' href='" + url + "'>" + dawaois.anvendelseskoder[bygning.BYG_ANVEND_KODE] + " fra " + bygning.OPFOERELSE_AAR + "</a>"),{autoPan: true});
-    
-    map.setView(punkt,12);
-    popup.openPopup();
-  //  map.fitBounds(geojsonlayer.getBounds());
-  });
-}
+exports.nærmesteVejstykke= function(getMap) {
+  return function(e) {
+    fetch(dawautil.danUrl("https://dawa.aws.dk/vejstykker/reverse",{format: 'geojson', x: e.latlng.lng, y: e.latlng.lat}))
+    .catch(function (error) {
+      alert(error.message);
+    })
+    .then(function(response) {
+      if (response.status >=400 && response.status <= 499) {
+        response.json().then(function (object) {
+          alert(object.type + ': ' + object.title);
+        });
+      }
+      else if (response.status >= 200 && response.status <=299 ){
+        return response.json();
+      }
+    }) 
+    .then( function ( vejstykke ) { 
+      var layer= L.geoJSON(vejstykke).addTo(getMap());
+      var popup= layer.bindPopup("<a target='_blank' href='https://dawa.aws.dk/vejstykker?kode="+vejstykke.properties.kode+"&kommunekode="+vejstykke.properties.kommunekode+"'>" + vejstykke.properties.navn + " (" + vejstykke.properties.kode + ")" + "</a>");
+      popup.openPopup();
+    });
+  };
+};
 
-exports.nærmesteVejstykke= function(e) {
-  fetch(dawautil.danUrl("https://dawa.aws.dk/vejstykker/reverse",{format: 'geojson', x: e.latlng.lng, y: e.latlng.lat}))
-  .catch(function (error) {
-    alert(error.message);
-  })
-  .then(function(response) {
-    if (response.status >=400 && response.status <= 499) {
-      response.json().then(function (object) {
-        alert(object.type + ': ' + object.title);
-      });
-    }
-    else if (response.status >= 200 && response.status <=299 ){
-      return response.json();
-    }
-  }) 
-  .then( function ( vejstykke ) { 
-    var layer= L.geoJSON(vejstykke).addTo(map);
-    var popup= layer.bindPopup("<a target='_blank' href='https://dawa.aws.dk/vejstykker?kode="+vejstykke.properties.kode+"&kommunekode="+vejstykke.properties.kommunekode+"'>" + vejstykke.properties.navn + " (" + vejstykke.properties.kode + ")" + "</a>");
-    popup.openPopup();
-  });
-}
-
-exports.hvor= function(e) {
+exports.hvor= function(getMap) {
+  return function(e) {
     var antal= 0;
     var promises= [];
 
@@ -779,36 +789,38 @@ exports.hvor= function(e) {
       var popup = L.popup()
       .setLatLng(punkt)
       .setContent(tekst)
-      .openOn(map);
+      .openOn(getMap());
     });
-  }
+  };
+};
 
-  function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  }
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
 
-  function formatpostnummer(data) {
-    return "<li>Postnummer: <a target='_blank' href='https://dawa.aws.dk/postnumre/"+data.nr+"'>" +  data.nr + " " + data.navn + "</a></li>";
-  }
-  function formatstorkreds(data) {
-    return "<li>Storkreds: <a target='_blank' href='https://dawa.aws.dk/storkredse/"+data.nummer+"'>" + data.navn + " (" + data.nummer + ")" + "</a></li>";
-  }
+function formatpostnummer(data) {
+  return "<li>Postnummer: <a target='_blank' href='https://dawa.aws.dk/postnumre/"+data.nr+"'>" +  data.nr + " " + data.navn + "</a></li>";
+}
 
-  function formatjordstykke(data) {
-    return "<li>Jordstykke: <a target='_blank' href='https://dawa.aws.dk/jordstykker/"+data.ejerlav.kode+"/"+data.matrikelnr+"'>" + (data.ejerlav.navn?data.ejerlav.navn+" ":"") + data.ejerlav.kode + " " +data.matrikelnr + "</a></li>";
-  }
+function formatstorkreds(data) {
+  return "<li>Storkreds: <a target='_blank' href='https://dawa.aws.dk/storkredse/"+data.nummer+"'>" + data.navn + " (" + data.nummer + ")" + "</a></li>";
+}
 
-  function formatstednavne(data) {
-    let tekst= '';
-    for (var i= 0; i<data.length;i++) {
-      tekst= tekst + "<li>" + capitalizeFirstLetter(data[i].undertype)+": <a target='_blank' href='https://dawa.aws.dk/stednavne/"+data[i].id+"'>" + data[i].navn + "</a></li>";
-    }
-    return tekst;
-  }
+function formatjordstykke(data) {
+  return "<li>Jordstykke: <a target='_blank' href='https://dawa.aws.dk/jordstykker/"+data.ejerlav.kode+"/"+data.matrikelnr+"'>" + (data.ejerlav.navn?data.ejerlav.navn+" ":"") + data.ejerlav.kode + " " +data.matrikelnr + "</a></li>";
+}
 
-  function formatdata(titel,id) {
-    return function (data) { return "<li>" + titel + ": <a target='_blank' href='https://dawa.aws.dk/"+id+"/"+data.kode+"'>" + data.navn + " (" + data.kode + ")" + "</a></li>"};
+function formatstednavne(data) {
+  let tekst= '';
+  for (var i= 0; i<data.length;i++) {
+    tekst= tekst + "<li>" + capitalizeFirstLetter(data[i].undertype)+": <a target='_blank' href='https://dawa.aws.dk/stednavne/"+data[i].id+"'>" + data[i].navn + "</a></li>";
   }
+  return tekst;
+}
+
+function formatdata(titel,id) {
+  return function (data) { return "<li>" + titel + ": <a target='_blank' href='https://dawa.aws.dk/"+id+"/"+data.kode+"'>" + data.navn + " (" + data.kode + ")" + "</a></li>";};
+}
 
 
 /***/ }),
@@ -818,7 +830,84 @@ exports.hvor= function(e) {
 "use strict";
 
 
-var dawaAutocomplete2 = __webpack_require__(6)
+var anvendelseskoder= {};
+function initanvendelseskoder() {
+anvendelseskoder[110]= "Stuehus til landbrugsejendom";
+anvendelseskoder[120]= "Fritliggende eenfamilieshus (parcelhus)";
+anvendelseskoder[130]= "Række-, kæde-, eller dobbelthus (lodret adskillelse mellem enhederne)";
+anvendelseskoder[140]= "Etageboligbebyggelse (flerfamiliehus, herunder to-familiehus (vandret adskillelse mellem enhederne)";
+anvendelseskoder[150]= "Kollegium";
+anvendelseskoder[160]= "Døgninstitution (plejehjem, alderdomshjem, børne- eller ungdomshjem)";
+anvendelseskoder[190]= "Anden bygning til helårsbeboelse";
+anvendelseskoder[210]= "Bygning til erhvervsmæssig produktion vedrørende landbrug, gartneri, råstofudvinding o. lign";
+anvendelseskoder[220]= "Bygning til erhvervsmæssig produktion vedrørende industri, håndværk m.v. (fabrik, værksted o. lign.)";
+anvendelseskoder[230]= "El-, gas-, vand- eller varmeværk, forbrændingsanstalt m.v.";
+anvendelseskoder[290]= "Anden bygning til landbrug, industri etc.";
+anvendelseskoder[310]= "Transport- og garageanlæg (fragtmandshal, lufthavnsbygning, banegårdsbygning, parkeringshus). Garage med plads til et eller to køretøjer registreres med anvendelseskode 910";
+anvendelseskoder[320]= "Bygning til kontor, handel, lager, herunder offentlig administration";
+anvendelseskoder[330]= "Bygning til hotel, restaurant, vaskeri, frisør og anden servicevirksomhed";
+anvendelseskoder[390]= "Anden bygning til transport, handel etc.";
+anvendelseskoder[410]= "Bygning til biograf, teater, erhvervsmæssig udstilling, bibliotek, museum, kirke o. lign.";
+anvendelseskoder[420]= "Bygning til undervisning og forskning (skole, gymnasium, forskningslaboratorium o. lign.)";
+anvendelseskoder[430]= "Bygning til hospital, sygehjem, fødeklinik o. lign.";
+anvendelseskoder[440]= "Bygning til daginstitution";
+anvendelseskoder[490]= "Bygning til anden institution, herunder kaserne, fængsel o. lign.";
+anvendelseskoder[510]= "Sommerhus";
+anvendelseskoder[520]= "Bygning til ferieformål m.v., bortset fra sommerhus (feriekoloni, vandrehjem o. lign.)";
+anvendelseskoder[530]= "Bygning i forbindelse med idrætsudøvelse (klubhus, idrætshal, svømmehal o. lign.)";
+anvendelseskoder[540]= "Kolonihavehus";
+anvendelseskoder[590]= "Anden bygning til fritidsformål";
+anvendelseskoder[910]= "Garage med plads til et eller to køretøjer";
+anvendelseskoder[920]= "Carport";
+anvendelseskoder[930]= "Udhus";
+}
+initanvendelseskoder();
+exports.anvendelseskoder= anvendelseskoder;
+
+
+var klassifikationskoder= {};
+function initklassifikationskoder() {
+klassifikationskoder[1110]= "Tank (Produkt på væskeform)";
+klassifikationskoder[1120]= "Silo (Produkt på fast form)";
+klassifikationskoder[1130]= "Gasbeholder (Produkt på gasform)";
+klassifikationskoder[1140]= "Affaldsbeholder";
+klassifikationskoder[1210]= "Vindmølle (elproducerende)";
+klassifikationskoder[1220]= "Slanger til jordvarme";
+klassifikationskoder[1230]= "Solvarme-/ solcelleanlæg";
+klassifikationskoder[1240]= "Nødstrømsforsyningsanlæg";
+klassifikationskoder[1250]= "Transformerstation";
+klassifikationskoder[1260]= "Elskab";
+klassifikationskoder[1265]= "Naturgasfyr";
+klassifikationskoder[1270]= "Andet energiproducerende eller - distribuerende anlæg";
+klassifikationskoder[1310]= "Vandtårn";
+klassifikationskoder[1320]= "Pumpestation";
+klassifikationskoder[1330]= "Swimmingpool";
+klassifikationskoder[1340]= "Private rensningsanlæg f.eks. pileanlæg, nedsivningsanlæg";
+klassifikationskoder[1350]= "Offentlige rensningsanlæg";
+klassifikationskoder[1360]= "Regnvandsanlæg";
+klassifikationskoder[1905]= "Legeplads";
+klassifikationskoder[1910]= "Teknikhus";
+klassifikationskoder[1915]= "Døgnpostboks";
+klassifikationskoder[1920]= "Køleanlæg (herunder aircondition)";
+klassifikationskoder[1925]= "Kunstværk (springvand, mindesmærker m.v.)";
+klassifikationskoder[1930]= "Sirene / mast med sirene";
+klassifikationskoder[1935]= "Skilt";
+klassifikationskoder[1940]= "Antenne / mast fx tv, radio- og telekommunikation";
+klassifikationskoder[1945]= "Dambrug";
+klassifikationskoder[1950]= "Møddingsanlæg";
+klassifikationskoder[1955]= "Andet teknisk anlæg";
+}
+initklassifikationskoder();
+exports.klassifikationskoder= klassifikationskoder;
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var dawaAutocomplete2 = __webpack_require__(7)
   , dawautil = __webpack_require__(0);
 
 function selected(map) {
@@ -885,7 +974,7 @@ exports.search = function(id, options) {
 }
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2833,83 +2922,6 @@ function dawaAutocomplete(inputElm, options) {
 
 
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(2)))
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var anvendelseskoder= {};
-function initanvendelseskoder() {
-anvendelseskoder[110]= "Stuehus til landbrugsejendom";
-anvendelseskoder[120]= "Fritliggende eenfamilieshus (parcelhus)";
-anvendelseskoder[130]= "Række-, kæde-, eller dobbelthus (lodret adskillelse mellem enhederne)";
-anvendelseskoder[140]= "Etageboligbebyggelse (flerfamiliehus, herunder to-familiehus (vandret adskillelse mellem enhederne)";
-anvendelseskoder[150]= "Kollegium";
-anvendelseskoder[160]= "Døgninstitution (plejehjem, alderdomshjem, børne- eller ungdomshjem)";
-anvendelseskoder[190]= "Anden bygning til helårsbeboelse";
-anvendelseskoder[210]= "Bygning til erhvervsmæssig produktion vedrørende landbrug, gartneri, råstofudvinding o. lign";
-anvendelseskoder[220]= "Bygning til erhvervsmæssig produktion vedrørende industri, håndværk m.v. (fabrik, værksted o. lign.)";
-anvendelseskoder[230]= "El-, gas-, vand- eller varmeværk, forbrændingsanstalt m.v.";
-anvendelseskoder[290]= "Anden bygning til landbrug, industri etc.";
-anvendelseskoder[310]= "Transport- og garageanlæg (fragtmandshal, lufthavnsbygning, banegårdsbygning, parkeringshus). Garage med plads til et eller to køretøjer registreres med anvendelseskode 910";
-anvendelseskoder[320]= "Bygning til kontor, handel, lager, herunder offentlig administration";
-anvendelseskoder[330]= "Bygning til hotel, restaurant, vaskeri, frisør og anden servicevirksomhed";
-anvendelseskoder[390]= "Anden bygning til transport, handel etc.";
-anvendelseskoder[410]= "Bygning til biograf, teater, erhvervsmæssig udstilling, bibliotek, museum, kirke o. lign.";
-anvendelseskoder[420]= "Bygning til undervisning og forskning (skole, gymnasium, forskningslaboratorium o. lign.)";
-anvendelseskoder[430]= "Bygning til hospital, sygehjem, fødeklinik o. lign.";
-anvendelseskoder[440]= "Bygning til daginstitution";
-anvendelseskoder[490]= "Bygning til anden institution, herunder kaserne, fængsel o. lign.";
-anvendelseskoder[510]= "Sommerhus";
-anvendelseskoder[520]= "Bygning til ferieformål m.v., bortset fra sommerhus (feriekoloni, vandrehjem o. lign.)";
-anvendelseskoder[530]= "Bygning i forbindelse med idrætsudøvelse (klubhus, idrætshal, svømmehal o. lign.)";
-anvendelseskoder[540]= "Kolonihavehus";
-anvendelseskoder[590]= "Anden bygning til fritidsformål";
-anvendelseskoder[910]= "Garage med plads til et eller to køretøjer";
-anvendelseskoder[920]= "Carport";
-anvendelseskoder[930]= "Udhus";
-}
-initanvendelseskoder();
-exports.anvendelseskoder= anvendelseskoder;
-
-
-var klassifikationskoder= {};
-function initklassifikationskoder() {
-klassifikationskoder[1110]= "Tank (Produkt på væskeform)";
-klassifikationskoder[1120]= "Silo (Produkt på fast form)";
-klassifikationskoder[1130]= "Gasbeholder (Produkt på gasform)";
-klassifikationskoder[1140]= "Affaldsbeholder";
-klassifikationskoder[1210]= "Vindmølle (elproducerende)";
-klassifikationskoder[1220]= "Slanger til jordvarme";
-klassifikationskoder[1230]= "Solvarme-/ solcelleanlæg";
-klassifikationskoder[1240]= "Nødstrømsforsyningsanlæg";
-klassifikationskoder[1250]= "Transformerstation";
-klassifikationskoder[1260]= "Elskab";
-klassifikationskoder[1265]= "Naturgasfyr";
-klassifikationskoder[1270]= "Andet energiproducerende eller - distribuerende anlæg";
-klassifikationskoder[1310]= "Vandtårn";
-klassifikationskoder[1320]= "Pumpestation";
-klassifikationskoder[1330]= "Swimmingpool";
-klassifikationskoder[1340]= "Private rensningsanlæg f.eks. pileanlæg, nedsivningsanlæg";
-klassifikationskoder[1350]= "Offentlige rensningsanlæg";
-klassifikationskoder[1360]= "Regnvandsanlæg";
-klassifikationskoder[1905]= "Legeplads";
-klassifikationskoder[1910]= "Teknikhus";
-klassifikationskoder[1915]= "Døgnpostboks";
-klassifikationskoder[1920]= "Køleanlæg (herunder aircondition)";
-klassifikationskoder[1925]= "Kunstværk (springvand, mindesmærker m.v.)";
-klassifikationskoder[1930]= "Sirene / mast med sirene";
-klassifikationskoder[1935]= "Skilt";
-klassifikationskoder[1940]= "Antenne / mast fx tv, radio- og telekommunikation";
-klassifikationskoder[1945]= "Dambrug";
-klassifikationskoder[1950]= "Møddingsanlæg";
-klassifikationskoder[1955]= "Andet teknisk anlæg";
-}
-initklassifikationskoder();
-exports.klassifikationskoder= klassifikationskoder;
 
 /***/ })
 /******/ ]);

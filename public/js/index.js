@@ -1,13 +1,13 @@
 "use strict";
 
 var kort= require('dawa-kort')
-  , dawalautocomplete= require('./dawa-leaflet-autocomplete.js')
- // , dawalgrafik= require('./dawa-leaflet-grafik.js')
-  , dawautil= require('dawa-util')
-  , URLSearchParams = require('url-search-params')  
-  , dawaois= require('./dawa-ois-koder.js');
+  , dawalautocomplete= require('./dawa-leaflet-autocomplete.js');
 
 var map;
+
+function getMap() {
+  return map;
+}
 
 var options= {
   contextmenu: true,
@@ -19,19 +19,19 @@ var options= {
   // },
   {
     text: 'Adgangsadresse?',
-    callback: kort.nærmesteAdgangsadresse
+    callback: kort.nærmesteAdgangsadresse(getMap)
   },
   {
     text: 'Bygning?',
-    callback: kort.nærmesteBygning
+    callback: kort.nærmesteBygning(getMap)
   },
   {
     text: 'Vej?',
-    callback: kort.nærmesteVejstykke
+    callback: kort.nærmesteVejstykke(getMap)
   },
   {
     text: 'Hvor?',
-    callback: kort.hvor
+    callback: kort.hvor(getMap)
   }
   // {
   //   text: 'Kommune?',
