@@ -388,9 +388,7 @@ module.exports = g;
 
 
 var kort= __webpack_require__(4)
-  , dawalautocomplete= __webpack_require__(6)
- // , dawalgrafik= require('./dawa-leaflet-grafik.js')
-  , dawautil= __webpack_require__(0)
+  , dawalautocomplete= __webpack_require__(6);
 
 var map;
 
@@ -430,6 +428,21 @@ var options= {
   //   callback: centerMap
   // }
   ]
+};
+
+
+if (navigator.geolocation) {
+  options.contextmenuItems.push(
+    {
+      text: 'Placering?',
+      callback: 
+        function () {        
+          navigator.geolocation.getCurrentPosition(function (position) {
+            map.setView(L.latLng(position.coords.latitude, position.coords.longitude),12);
+          });
+        }
+    }
+  )
 };
 
 function main() { 

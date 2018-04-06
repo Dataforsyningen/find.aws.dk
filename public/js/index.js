@@ -43,6 +43,21 @@ var options= {
   ]
 };
 
+
+if (navigator.geolocation) {
+  options.contextmenuItems.push(
+    {
+      text: 'Placering?',
+      callback: 
+        function () {        
+          navigator.geolocation.getCurrentPosition(function (position) {
+            map.setView(L.latLng(position.coords.latitude, position.coords.longitude),12);
+          });
+        }
+    }
+  )
+};
+
 function main() { 
   fetch('/getticket').then(function (response) {
     response.text().then(function (ticket) {      
