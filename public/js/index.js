@@ -49,10 +49,14 @@ if (navigator.geolocation) {
     {
       text: 'Placering?',
       callback: 
-        function () {        
-          navigator.geolocation.getCurrentPosition(function (position) {
+        function () {
+          function success(position) {
             map.setView(L.latLng(position.coords.latitude, position.coords.longitude),12);
-          });
+          };
+          function error(err) {
+            console.warn(`ERROR(${err.code}): ${err.message}`);
+          }      
+          navigator.geolocation.getCurrentPosition(success,error);
         }
     }
   )
@@ -70,4 +74,15 @@ function main() {
 }
 
 main();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js')
+  .then(function (registration) {
+    console.log('Service Worker registration successful with scope: ',
+    registration.scope)
+  })
+  .catch(function (err) {
+    console.log('Service Worker registration failed: ', err)
+  })
+}
 
