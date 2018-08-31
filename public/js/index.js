@@ -27,7 +27,7 @@ var options= {
   },
   {
     text: 'Vej?',
-    callback: kort.nærmesteVejstykke(getMap)
+    callback: kort.nærmesteNavngivneVej(getMap)
   },
   {
     text: 'Hvor?',
