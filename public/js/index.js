@@ -54,7 +54,7 @@ if (navigator.geolocation) {
             map.setView(L.latLng(position.coords.latitude, position.coords.longitude),12);
           };
           function error(err) {
-            console.warn(`ERROR(${err.code}): ${err.message}`);
+            console.warn('ERROR(${err.code}): ${err.message}');
           }      
           navigator.geolocation.getCurrentPosition(success,error);
         }
