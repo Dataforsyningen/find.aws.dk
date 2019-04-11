@@ -9,6 +9,17 @@ function getMap() {
   return map;
 }
 
+
+function visKoordinater (e) {
+  var parametre= {};
+  parametre.x= e.latlng.lng; 
+  parametre.y= e.latlng.lat; 
+  var popup = L.popup()
+    .setLatLng(e.latlng)
+    .setContent('<p>Koordinater<br/>(' + parametre.x + ', ' + parametre.y + ')</p>')
+    .openOn(getMap());
+}
+
 var options= {
   contextmenu: true,
   contextmenuWidth: 140,
@@ -32,6 +43,10 @@ var options= {
   {
     text: 'Hvor?',
     callback: kort.hvor(getMap)
+  },
+  {
+    text: 'Koordinater?',
+    callback: visKoordinater
   }
   // {
   //   text: 'Kommune?',
